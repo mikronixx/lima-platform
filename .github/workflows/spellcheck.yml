@@ -1,0 +1,45 @@
+name: Spell Check (Markdown: root + docs)
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+permissions:
+  contents: read
+
+jobs:
+  spellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install codespell
+        run: |
+          pip install codespell
+
+      - name: Spell check Markdown files (root + docs/)
+        run: |
+          IGNORE_FILE=".codespellignore"
+          if [ ! -f "$IGNORE_FILE" ]; then
+            echo "(No ignore file found, proceeding with defaults)"
+          fi
+
+          echo "Finding Markdown files in root and docs/..."
+          files=$(find . -maxdepth 1 -type f -iname '*.md' \
+                    -o -path './docs/*.md' | sort)
+
+          if [ -z "$files" ]; then
+            echo "No Markdown files found. Nothing to check."
+            exit 0
+          fi
+
+          echo "Checking these files:"
+          echo "$files"
+
+          if ! codespell $files --ignore-words "$IGNORE_FILE" ; then
+            echo "::error::fix your repo"
+            exit 1
+          fi
