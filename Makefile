@@ -139,7 +139,7 @@ mac-infra:
 	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_FAKEDNS_PLAYBOOK) $(CREATE_BOOTP_PLAYBOOK) $(INSTALL_SOCKET_VMNET_PLAYBOOK)"
 
 mac-infra-delete:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_FAKEDNS_PLAYBOOK) 
+	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_FAKEDNS_PLAYBOOK)" 
 
 fakedns-install:
 	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_FAKEDNS_PLAYBOOK)"
