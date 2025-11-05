@@ -1,0 +1,32 @@
+# Lima configuration (mydev00)
+vmType: vz
+cpus: 2
+memory: 4GiB
+disk: 20GiB
+
+images:
+  - location: "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-arm64.img"
+    arch: "aarch64"
+  # If there is a local copy  and you wish to use it
+  # - location: "file:///Users/USERNAME/path/to/noble-server-cloudimg-arm64.img"
+
+networks:
+  - lima: shared
+    macAddress: "de:ad:be:ef:00:05"   # must match /etc/bootptab
+ssh:
+  loadDotSSHPubKeys: true    
+
+provision:
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux
+      NODE_NAME="${NODE_NAME:-mydev00}"
+      apt-get update
+      apt-get install -y qemu-guest-agent openssh-server curl ca-certificates net-tools
+      apt-get full-upgrade -y
+      systemctl enable --now ssh || systemctl enable --now sshd || true
+      hostnamectl set-hostname "$NODE_NAME"
+      grep -q '192\.168\.105\.105 mydev00' /etc/hosts || cat >> /etc/hosts <<-EOF
+      192.168.105.105 mydev00
+      EOF   

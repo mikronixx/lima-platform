@@ -19,6 +19,7 @@
           k8scp000          1       de:ad:be:ef:00:01   192.168.105.101
           k8sw000           1       de:ad:be:ef:00:02   192.168.105.102
           k8sw001           1       de:ad:be:ef:00:03   192.168.105.103
+          mydev00           1       de:ad:be:ef:00:05   192.168.105.105
       notify: Restart bootpd
 
   handlers:

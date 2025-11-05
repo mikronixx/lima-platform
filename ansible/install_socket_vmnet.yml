@@ -11,6 +11,21 @@
     prefix_dir: "/opt/socket_vmnet"
 
   tasks:
+    - name: Remove installed versions of socket_vmnet
+      file:
+        path: "{{ prefix_dir }}"
+        state: absent
+
+    - name: Remove lima sudoers config for previous versions of socket_vmnet
+      file:
+        path: /etc/sudoers.d/lima
+        state: absent
+
+    - name: Remove existing socket_vmnet clone dir
+      ansible.builtin.file:
+        path: "{{ repo_dir }}"
+        state: absent  
+
     - name: Check for make
       command: which make
       register: make_check

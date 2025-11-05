@@ -32,18 +32,36 @@ Clone this repo:
 
 ```bash
 git clone https://github.com/mkrohn-repo/lima-platform.git
-#or
+# or
 git clone git@github.com:mkrohn-repo/lima-platform.git
 ```
 
 ### Installing socket_vmnet for network management
 
 ```bash
-# if you are creating a k8s cluster there is to need to run this step.
-# It is only needed if you are running a single vm 
+# if you are creating a single vm or a k8s cluster with the make commands below then there is to need to run this step.
+# Included for informational purposes
 # make help for a full list of options
 cd lima-platform/
 make socket_vmnet_install 
+```
+
+## Create a single VM
+
+```bash
+# make help for a full list of options
+cd lima-platform/
+make vm  # Installs socket_vmnet, adds vm hostname to /etc/hosts, add a mac address to bootptab for dhcp,  creates a single vm, updates packages and reboots
+```
+
+## Start, Stop, or Restart your VM
+
+```bash
+# make help for a full list of options
+cd lima-platform/
+make vm-start
+make vm-stop
+make vm-restart
 ```
 
 ## Create a 3 node cluster, but no k8s
@@ -51,7 +69,7 @@ make socket_vmnet_install
 ```bash
 # make help for a full list of options
 cd lima-platform/
-make cluster #Installs socket_vmnet, adds hostnames to /etc/hosts, add a bootptab file for dhcp,  creates a 3 node cluster, updates packages and reboots
+make cluster # Installs socket_vmnet, adds hostnames to /etc/hosts, add a bootptab file for dhcp,  creates a 3 node cluster, updates packages and reboots
 ```
 
 ## Create a 3 node kubeadm managed kubernetes cluster
@@ -74,9 +92,7 @@ make cluster-stop
 make cluster-restart
 ```
 
-## Use your new Kubernetes cluster
-
-## Spin up a VM
+## Using the poc code, if you must
 
 ```bash
 #run from repo root, or adjust path as needed
@@ -87,7 +103,7 @@ limactl start vm-dhcp-bootp
 limactl shell vm-dhcp-bootp
 ```
 
-## Stop or delete a VM
+## Stop or delete a VM with limactl
 
 ```bash
 limactl stop vm-dhcp-bootp
