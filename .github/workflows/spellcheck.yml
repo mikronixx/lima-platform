@@ -1,4 +1,6 @@
-name: Spell Check (Markdown: root + docs)
+---
+
+name: Spell Check Markdown
 
 on:
   push:
