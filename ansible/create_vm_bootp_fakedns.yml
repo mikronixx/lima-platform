@@ -1,0 +1,17 @@
+---
+- name: Add VM host entries to /etc/hosts
+  hosts: localhost
+  become: true
+  gather_facts: false
+
+  vars:
+    hosts_entries:
+      - { ip: "192.168.105.105", name: "mydev00" }
+
+  tasks:
+    - name: Ensure VM hosts exist in /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ item.ip }} {{ item.name }}"
+        state: present
+      loop: "{{ hosts_entries }}"

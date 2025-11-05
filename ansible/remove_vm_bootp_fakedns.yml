@@ -1,0 +1,17 @@
+---
+- name: Remove VM host entries
+  hosts: localhost
+  become: true
+  gather_facts: false
+
+  vars:
+    hosts_entries:
+      - { ip: "192.168.105.105", name: "mydev00" }
+
+  tasks:
+    - name: Ensure VM hosts are absent from /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ item.ip }} {{ item.name }}"
+        state: absent
+      loop: "{{ hosts_entries }}"
