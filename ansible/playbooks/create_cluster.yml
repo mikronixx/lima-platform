@@ -1,0 +1,9 @@
+---
+- name: Configure DHCP/BOOTP reservations for Lima VMs
+  hosts: localhost
+  connection: local
+  become: true
+  become_method: sudo
+
+  roles:
+    - create_bootp
