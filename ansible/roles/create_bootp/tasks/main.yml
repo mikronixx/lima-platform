@@ -1,0 +1,29 @@
+---
+- name: Configure DHCP/BOOTP reservations for Lima VMs
+  hosts: localhost
+  connection: local
+  become: true
+  become_method: sudo
+
+  tasks:
+    - name: Ensure /etc/bootptab has the desired reservations
+      ansible.builtin.copy:
+        dest: /etc/bootptab
+        owner: root
+        group: wheel
+        mode: "0644"
+        backup: true
+        content: | 
+          %%
+          # hostname      hwtype  hwaddr              ipaddr            
+          k8scp000          1       de:ad:be:ef:00:01   192.168.105.101
+          k8sw000           1       de:ad:be:ef:00:02   192.168.105.102
+          k8sw001           1       de:ad:be:ef:00:03   192.168.105.103
+          mydev00           1       de:ad:be:ef:00:05   192.168.105.105
+      notify: Restart bootpd
+
+  handlers:
+    - name: Restart bootpd
+      ansible.builtin.command:
+        cmd: /bin/launchctl kickstart -kp system/com.apple.bootpd
+      ignore_errors: true
