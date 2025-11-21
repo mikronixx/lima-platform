@@ -1,20 +1,10 @@
 ---
-- name: Remove socket_vmnet from macOS host
-  hosts: localhost
-  connection: local
-  gather_facts: false
-  become: true
-  become_method: sudo
-  vars:
-    prefix_dir: "/opt/socket_vmnet"
+- name: Remove installed binaries
+  ansible.builtin.file:
+    path: "{{ prefix_dir }}"
+    state: absent
 
-  tasks:
-    - name: Remove installed binaries
-      file:
-        path: "{{ prefix_dir }}"
-        state: absent
-
-    - name: Remove lima sudoers config
-      file:
-        path: /etc/sudoers.d/lima
-        state: absent
+- name: Remove lima sudoers config
+  ansible.builtin.file:
+    path: /etc/sudoers.d/lima
+    state: absent

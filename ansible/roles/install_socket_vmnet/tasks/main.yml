@@ -1,79 +1,66 @@
 ---
-- name: Manage socket_vmnet on macOS host
-  hosts: localhost
-  connection: local
-  gather_facts: false
-  become: true
-  become_method: sudo
-  vars:
-    repo_url: "https://github.com/lima-vm/socket_vmnet"
-    repo_dir: "/tmp/socket_vmnet"
-    prefix_dir: "/opt/socket_vmnet"
+- name: Remove installed versions of socket_vmnet
+  ansible.builtin.file:
+    path: "{{ prefix_dir }}"
+    state: absent
 
-  tasks:
-    - name: Remove installed versions of socket_vmnet
-      file:
-        path: "{{ prefix_dir }}"
-        state: absent
+- name: Remove lima sudoers config for previous versions of socket_vmnet
+  ansible.builtin.file:
+    path: /etc/sudoers.d/lima
+    state: absent
 
-    - name: Remove lima sudoers config for previous versions of socket_vmnet
-      file:
-        path: /etc/sudoers.d/lima
-        state: absent
+- name: Remove existing socket_vmnet clone dir
+  ansible.builtin.file:
+    path: "{{ repo_dir }}"
+    state: absent
 
-    - name: Remove existing socket_vmnet clone dir
-      ansible.builtin.file:
-        path: "{{ repo_dir }}"
-        state: absent  
+- name: Check for make
+  ansible.builtin.command: which make
+  register: make_check
+  ignore_errors: true
 
-    - name: Check for make
-      command: which make
-      register: make_check
-      ignore_errors: true
+- name: Fail if make is missing
+  ansible.builtin.fail:
+    msg: "'make' not found. Please install Xcode Command Line Tools."
+  when: make_check.rc != 0
 
-    - name: Fail if make is missing
-      fail:
-        msg: "'make' not found. Please install Xcode Command Line Tools."
-      when: make_check.rc != 0
+- name: Check for go
+  ansible.builtin.command: which go
+  register: go_check
+  ignore_errors: true
 
-    - name: Check for go
-      command: which go
-      register: go_check
-      ignore_errors: true
+- name: Fail if go is missing
+  ansible.builtin.fail:
+    msg: "'go' not found. Please install Go toolchain."
+  when: go_check.rc != 0
 
-    - name: Fail if go is missing
-      fail:
-        msg: "'go' not found. Please install Go toolchain."
-      when: go_check.rc != 0
+- name: Clone socket_vmnet repo
+  ansible.builtin.git:
+    repo: "{{ repo_url }}"
+    dest: "{{ repo_dir }}"
+    version: master
+    force: yes
 
-    - name: Clone socket_vmnet repo
-      git:
-        repo: "{{ repo_url }}"
-        dest: "{{ repo_dir }}"
-        version: master
-        force: yes
+- name: Build socket_vmnet
+  ansible.builtin.make:
+    chdir: "{{ repo_dir }}"
 
-    - name: Build socket_vmnet
-      make:
-        chdir: "{{ repo_dir }}"
+- name: Install socket_vmnet binaries
+  ansible.builtin.command: make PREFIX={{ prefix_dir }} install.bin
+  args:
+    chdir: "{{ repo_dir }}"
 
-    - name: Install socket_vmnet binaries
-      command: make PREFIX={{ prefix_dir }} install.bin
-      args:
-        chdir: "{{ repo_dir }}"
+- name: Generate lima sudoers
+  become: false
+  ansible.builtin.shell: limactl sudoers > "{{ playbook_dir }}/etc_sudoers.d_lima"
+  args:
+    executable: /bin/bash
 
-    - name: Generate lima sudoers 
-      become: false
-      shell: limactl sudoers > "{{ playbook_dir }}/etc_sudoers.d_lima"
-      args:
-        executable: /bin/bash
+- name: Install lima sudoers
+  ansible.builtin.command: install -o root -g staff -m 0440 "{{ playbook_dir }}/etc_sudoers.d_lima" /private/etc/sudoers.d/lima
 
-    - name: install lima sudoers 
-      become: true
-      command: install -o root -g staff -m 0440 "{{ playbook_dir }}/etc_sudoers.d_lima" /private/etc/sudoers.d/lima
-
-    - name: Remove temporary sudoers file
-      become: false
-      file:
-        path: "{{ playbook_dir }}/etc_sudoers.d_lima"
-        state: absent
+- name: Remove temporary sudoers file
+  become: false
+  ansible.builtin.file:
+    path: "{{ playbook_dir }}/etc_sudoers.d_lima"
+    state: absent

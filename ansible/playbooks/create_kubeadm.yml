@@ -1,9 +1,11 @@
 ---
-- name: Configure DHCP/BOOTP reservations for Lima VMs
+- name: Creates Mac Infra for a 3 node cluster with k8s installed with kubeadm
   hosts: localhost
   connection: local
   become: true
   become_method: sudo
 
   roles:
+    - install_socket_vmnet
     - create_bootp
+    - create_fake_dns_k8s

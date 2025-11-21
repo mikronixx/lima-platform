@@ -1,0 +1,4 @@
+---
+repo_url: "https://github.com/lima-vm/socket_vmnet"
+repo_dir: "/tmp/socket_vmnet"
+prefix_dir: "/opt/socket_vmnet"

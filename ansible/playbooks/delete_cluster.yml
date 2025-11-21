@@ -1,12 +1,11 @@
 ---
-- name: Creates Mac Infra for a single vm
+- name: Remove Infra for a 3 node cluster
   hosts: localhost
   connection: local
   become: true
   become_method: sudo
 
   roles:
-    - install_socket_vmnet
+    - remove_socket_vmnet
     - create_bootp
-    - create_fake_dns_vm
-
+    - remove_fake_dns_k8s

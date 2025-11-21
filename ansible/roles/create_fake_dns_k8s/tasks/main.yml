@@ -1,19 +1,7 @@
 ---
-- name: Add cluster host entries to /etc/hosts
-  hosts: localhost
-  become: true
-  gather_facts: false
-
-  vars:
-    hosts_entries:
-      - { ip: "192.168.105.101", name: "k8scp000" }
-      - { ip: "192.168.105.102", name: "k8sw000" }
-      - { ip: "192.168.105.103", name: "k8sw001" }
-
-  tasks:
-    - name: Ensure cluster hosts exist in /etc/hosts
-      lineinfile:
-        path: /etc/hosts
-        line: "{{ item.ip }} {{ item.name }}"
-        state: present
-      loop: "{{ hosts_entries }}"
+- name: Ensure cluster hosts exist in /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: "{{ item.ip }} {{ item.name }}"
+    state: present
+  loop: "{{ hosts_entries }}"
