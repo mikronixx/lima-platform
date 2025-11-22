@@ -4,40 +4,28 @@
 NODES := k8scp000 k8sw000 k8sw001
 VM := mydev00
 PYTHON ?= python3
-INSTALL_SOCKET_VMNET_PLAYBOOK := ansible/install_socket_vmnet.yml
-REMOVE_SOCKET_VMNET_PLAYBOOK := ansible/remove_socket_vmnet.yml
-INVENTORY_FILE ?= ansible/inventory.ini
+INVENTORY_FILE ?= ansible/inventory/inventory.ini
 ANSIBLE_HOST_KEY_CHECKING ?= False
 ANSIBLE_SSH_ARGS ?= -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
-CREATE_BOOTP_PLAYBOOK := ansible/create_bootp.yml
-DELETE_BOOTP_PLAYBOOK := ansible/delete_bootp.yml
-#cluster make vars
-CREATE_FAKEDNS_PLAYBOOK := ansible/create_bootp_fakedns.yml
-DELETE_FAKEDNS_PLAYBOOK := ansible/remove_bootp_fakedns.yml
-INSTALL_K8S:= ansible/create_kubeadm_cluster.yml
-#VM make vars
-CREATE_VM_FAKEDNS_PLAYBOOK := ansible/create_vm_bootp_fakedns.yml
-DELETE_VM_FAKEDNS_PLAYBOOK := ansible/remove_vm_bootp_fakedns.yml
+CREATE_CLUSTER_PLAYBOOK := ansible/playbooks/create_cluster.yml
+DELETE_CLUSTER_PLAYBOOK := ansible/playbooks/delete_cluster.yml
+CREATE_VM_PLAYBOOK := ansible/playbooks/create_vm.yml
+DELETE_VM_PLAYBOOK := ansible/playbooks/delete_vm.yml
+INSTALL_KUBEADM_PLAYBOOK := ansible/playbooks/create_kubeadm.yml
 
 .PHONY: help 
 
 help:
 	@echo "Targets:"
-	@echo "  make mac-vm-infra # runs $(CREATE_VM_FAKEDNS_PLAYBOOK) $(CREATE_BOOTP_PLAYBOOK) and $(INSTALL_SOCKET_VMNET_PLAYBOOK) in a fresh venv"
-	@echo "  make mac-vm-infra-delete # runs $(DELETE_VM_FAKEDNS_PLAYBOOK)  and $(REMOVE_SOCKET_VMNET_PLAYBOOK) in a fresh venv"
-	@echo "  make mac-infra # runs $(CREATE_FAKEDNS_PLAYBOOK) $(CREATE_BOOTP_PLAYBOOK) and $(INSTALL_SOCKET_VMNET_PLAYBOOK) in a fresh venv"
-	@echo "  make mac-infra-delete # runs $(DELETE_FAKEDNS_PLAYBOOK)  and $(REMOVE_SOCKET_VMNET_PLAYBOOK) in a fresh venv"
-	@echo "  make fakedns-install   # runs $(CREATE_FAKEDNS_PLAYBOOK) in a fresh venv"
-	@echo "  make fakedns-delete    # runs $(DELETE_FAKEDNS_PLAYBOOK) in a fresh venv"
-	@echo "  make bootp-install   # runs $(CREATE_BOOTP_PLAYBOOK) in a fresh venv"
-	@echo "  make bootp-delete    # runs $(DELETE_BOOTP_PLAYBOOK) in a fresh venv"
-	@echo "  make socket_vmnet_install    # runs $(INSTALL_SOCKET_VMNET_PLAYBOOK) in a fresh venv"
-	@echo "  make socket_vmnet_remove    # runs $(REMOVE_SOCKET_VMNET_PLAYBOOK) in a fresh venv"
+	@echo "  make mac-vm-infra # runs $(CREATE_VM_PLAYBOOK)"
+	@echo "  make mac-vm-infra-delete # runs $(DELETE_VM_PLAYBOOK)"
+	@echo "  make mac-infra # runs $(CREATE_CLUSTER_PLAYBOOK)" 
+	@echo "  make mac-infra-delete # runs $(DELETE_CLUSTER_PLAYBOOK)" 
 	@echo "  make cluster-restart # restarts a 3 node cluster"
 	@echo "  make cluster-start # starts an existing 3 node cluster"
 	@echo "  make cluster-stop # stops an existing 3 node cluster"
 	@echo "  make cluster-create  # provisions a 3 node cluster"
-	@echo "  make install-k8s # creates a 3 node kubernetes cluster with kubeadm"
+	@echo "  make install-kubeadm # creates a 3 node kubernetes cluster with kubeadm"
 	@echo "  make cluster  # provisions a 3 node cluster, including socket_vmnet, a dhcp configuration for the VM's and a restart to update to latest kernel"
 	@echo "  make cluster-kube # provisions a 3 node cluster with kubeadm"
 	@echo "  make cluster-destroy # deletes all VM's provisioned for a k8s cluster"
@@ -53,10 +41,10 @@ vm: mac-vm-infra vm-create vm-restart
 vm-clean:  vm-destroy mac-vm-infra-delete 
 
 mac-vm-infra:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_VM_FAKEDNS_PLAYBOOK) $(CREATE_BOOTP_PLAYBOOK) $(INSTALL_SOCKET_VMNET_PLAYBOOK)"
+	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_VM_PLAYBOOK)"
 
 mac-vm-infra-delete:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_VM_FAKEDNS_PLAYBOOK)" 
+	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_VM_PLAYBOOK)" 
 
 vm-create:
 	@set -e; \
@@ -96,9 +84,16 @@ vm-destroy:
 
 cluster: mac-infra cluster-create cluster-restart 
 
-cluster-kube: cluster install-k8s
+cluster-kubeadm: cluster install-kubeadm
 
-cluster-clean:  cluster-destroy mac-infra-delete 
+mac-infra:
+	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_CLUSTER_PLAYBOOK )"
+
+mac-infra-delete:
+	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_CLUSTER_PLAYBOOK)" 
+
+install-kubeadm: 
+	@$(MAKE) _run_k8s_playbook PLAYBOOK="$(INSTALL_KUBEADM_PLAYBOOK) -i $(INVENTORY_FILE)"
 
 cluster-create:
 	@set -e; \
@@ -135,17 +130,6 @@ cluster-destroy:
 		limactl delete $$n --force; \
 	done
 
-mac-infra:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_FAKEDNS_PLAYBOOK) $(CREATE_BOOTP_PLAYBOOK) $(INSTALL_SOCKET_VMNET_PLAYBOOK)"
-
-mac-infra-delete:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_FAKEDNS_PLAYBOOK)" 
-
-fakedns-install:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_FAKEDNS_PLAYBOOK)"
-
-fakedns-delete:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_FAKEDNS_PLAYBOOK)"
 
 bootp-install:
 	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_BOOTP_PLAYBOOK)"
@@ -153,14 +137,6 @@ bootp-install:
 bootp-delete:
 	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_BOOTP_PLAYBOOK)"
 
-socket_vmnet_install:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(INSTALL_SOCKET_VMNET_PLAYBOOK)"
-
-socket_vmnet_remove:	
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(REMOVE_SOCKET_VMNET_PLAYBOOK)"
-
-install-k8s: 
-	@$(MAKE) _run_k8s_playbook PLAYBOOK="$(INSTALL_K8S) -i $(INVENTORY_FILE)"
 
 _run_local_mac_playbook:
 	@set -euo pipefail; \
