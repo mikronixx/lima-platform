@@ -1,0 +1,52 @@
+---
+- name: Init control plane
+  ansible.builtin.command:
+    cmd: kubeadm init --pod-network-cidr={{ pod_network_cidr }}
+  args:
+    creates: /etc/kubernetes/admin.conf
+
+- name: Ensure ~/.kube exists
+  ansible.builtin.file:
+    path: "{{ kube_home }}/.kube"
+    state: directory
+    mode: '0755'
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid | default(ansible_user_id) }}"
+
+- name: Install kubeconfig
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ kube_home }}/.kube/config"
+    remote_src: true
+    mode: '0644'
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid | default(ansible_user_id) }}"
+
+- name: Install Calico
+  ansible.builtin.shell: |
+    kubectl apply -f {{ calico_manifest_url }} --kubeconfig {{ kube_home }}/.kube/config
+  args:
+    executable: /bin/bash
+
+- name: Get join command
+  ansible.builtin.command: kubeadm token create --print-join-command
+  delegate_to: "{{ groups['control_plane'][0] }}"
+  register: joincmd
+  changed_when: false
+
+- name: Set join command
+  ansible.builtin.set_fact:
+    global_join_command: "{{ joincmd.stdout }}"
+
+- name: Ensure serverTLSBootstrap true
+  ansible.builtin.lineinfile:
+    path: /var/lib/kubelet/config.yaml
+    regexp: '^serverTLSBootstrap:'
+    line: 'serverTLSBootstrap: true'
+    insertafter: EOF
+    backup: yes
+
+- name: Restart kubelet
+  ansible.builtin.systemd:
+    name: kubelet
+    state: restarted

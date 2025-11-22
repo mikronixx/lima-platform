@@ -1,0 +1,19 @@
+---
+- name: Join worker to cluster
+  ansible.builtin.shell: "{{ hostvars[groups['control_plane'][0]].global_join_command }}"
+  args:
+    executable: /bin/bash
+
+- name: Ensure serverTLSBootstrap true
+  ansible.builtin.lineinfile:
+    path: /var/lib/kubelet/config.yaml
+    regexp: '^serverTLSBootstrap:'
+    line: 'serverTLSBootstrap: true'
+    insertafter: EOF
+    backup: yes
+
+- name: Restart kubelet
+  ansible.builtin.systemd:
+    name: kubelet
+    state: restarted
+    enabled: true

@@ -115,7 +115,6 @@ limactl delete vm-dhcp-bootp --force
 
 - Simplify current Makefile target rules
 - UTM Compatibility/Co-existance
-- Ansible refactor
 
 ## References
 

@@ -40,11 +40,26 @@ vm: mac-vm-infra vm-create vm-restart
 
 vm-clean:  vm-destroy mac-vm-infra-delete 
 
+cluster: mac-infra cluster-create cluster-restart 
+
+cluster-clean:  cluster-destroy mac-infra-delete 
+
+cluster-kubeadm: cluster install-kubeadm
+
 mac-vm-infra:
 	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_VM_PLAYBOOK)"
 
 mac-vm-infra-delete:
 	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_VM_PLAYBOOK)" 
+
+mac-infra:
+	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_CLUSTER_PLAYBOOK)"
+
+mac-infra-delete:
+	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_CLUSTER_PLAYBOOK)" 
+
+install-kubeadm: 
+	@$(MAKE) _run_k8s_playbook PLAYBOOK="$(INSTALL_KUBEADM_PLAYBOOK) -i $(INVENTORY_FILE)"
 
 vm-create:
 	@set -e; \
@@ -82,18 +97,6 @@ vm-destroy:
 		echo "exit: $?"; \
 	done
 
-cluster: mac-infra cluster-create cluster-restart 
-
-cluster-kubeadm: cluster install-kubeadm
-
-mac-infra:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_CLUSTER_PLAYBOOK )"
-
-mac-infra-delete:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_CLUSTER_PLAYBOOK)" 
-
-install-kubeadm: 
-	@$(MAKE) _run_k8s_playbook PLAYBOOK="$(INSTALL_KUBEADM_PLAYBOOK) -i $(INVENTORY_FILE)"
 
 cluster-create:
 	@set -e; \
@@ -130,13 +133,11 @@ cluster-destroy:
 		limactl delete $$n --force; \
 	done
 
-
 bootp-install:
 	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_BOOTP_PLAYBOOK)"
 
 bootp-delete:
 	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_BOOTP_PLAYBOOK)"
-
 
 _run_local_mac_playbook:
 	@set -euo pipefail; \

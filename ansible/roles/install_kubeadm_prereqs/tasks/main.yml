@@ -1,0 +1,115 @@
+---
+- name: Capture remote user's HOME
+  ansible.builtin.set_fact:
+    kube_home: "{{ ansible_env.HOME }}"
+  become: false
+
+- name: Disable swap
+  ansible.builtin.command: swapoff -a
+  when: ansible_swaptotal_mb | int > 0
+
+- name: Remove swap from fstab
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^.*\sswap\s.*$'
+    replace: ''
+
+- name: Load kernel modules
+  ansible.builtin.copy:
+    dest: /etc/modules-load.d/k8s.conf
+    content: |
+      overlay
+      br_netfilter
+
+- name: Apply sysctl params
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/k8s.conf
+    content: |
+      net.bridge.bridge-nf-call-iptables  = 1
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.ipv4.ip_forward                 = 1
+
+- name: Reload sysctl
+  ansible.builtin.command: sysctl --system
+
+- name: Install base dependencies
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - software-properties-common
+    update_cache: true
+
+- name: Install containerd
+  ansible.builtin.apt:
+    name: containerd
+    state: present
+
+- name: Ensure /etc/containerd exists
+  ansible.builtin.file:
+    path: /etc/containerd
+    state: directory
+    mode: "0755"
+
+- name: Generate default containerd config
+  ansible.builtin.shell: |
+    containerd config default | tee /etc/containerd/config.toml >/dev/null
+
+- name: Set SystemdCgroup=true
+  ansible.builtin.lineinfile:
+    path: /etc/containerd/config.toml
+    regexp: '^.*SystemdCgroup = false'
+    line: '            SystemdCgroup = true'
+
+- name: Restart containerd
+  ansible.builtin.systemd:
+    name: containerd
+    state: restarted
+
+- name: Create apt keyrings dir
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download Kubernetes Release.key
+  ansible.builtin.get_url:
+    url: "https://pkgs.k8s.io/core:/stable:/{{ k8s_repo_version }}/deb/Release.key"
+    dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
+    mode: '0644'
+
+- name: Dearmor key
+  ansible.builtin.command:
+    cmd: >
+      gpg --dearmor
+      -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      /etc/apt/keyrings/kubernetes-apt-keyring.asc
+  args:
+    creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+- name: Ensure keyring permissions
+  ansible.builtin.file:
+    path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    mode: '0644'
+
+- name: Add Kubernetes apt repo
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{ k8s_repo_version }}/deb/ /"
+    filename: kubernetes
+    state: present
+    update_cache: yes
+
+- name: Install kubelet/kubeadm/kubectl
+  ansible.builtin.apt:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    update_cache: true
+
+- name: Hold k8s packages
+  ansible.builtin.command: apt-mark hold kubelet kubeadm kubectl
+  ignore_errors: yes

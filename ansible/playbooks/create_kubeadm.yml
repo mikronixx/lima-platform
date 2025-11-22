@@ -1,11 +1,41 @@
 ---
-- name: Creates Mac Infra for a 3 node cluster with k8s installed with kubeadm
-  hosts: localhost
-  connection: local
+- name: Configure prerequisites on all nodes
+  hosts: all
   become: true
-  become_method: sudo
-
+  vars_files:
+    - vars.yml
   roles:
-    - install_socket_vmnet
-    - create_bootp
-    - create_fake_dns_k8s
+    - k8s_prereqs
+
+- name: Initialize control plane
+  hosts: control_plane
+  become: true
+  vars_files:
+    - vars.yml
+  roles:
+    - kubeadm_control_plane
+
+- name: Join workers to cluster
+  hosts: workers
+  become: true
+  vars_files:
+    - vars.yml
+  roles:
+    - kubeadm_workers
+
+- name: Approve kubelet-serving CSRs
+  hosts: control_plane
+  become: false
+  tasks:
+    - name: Wait for CSR creation
+      ansible.builtin.pause:
+        seconds: 90
+
+    - name: Approve all pending CSRs
+      ansible.builtin.shell: |
+        set -euo pipefail
+        for a in $(kubectl get csr -o name); do
+          kubectl certificate approve "$a";
+        done
+      args:
+        executable: /bin/bash
