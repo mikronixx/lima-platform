@@ -1,8 +1,4 @@
 ---
-- name: Capture remote user's HOME
-  ansible.builtin.set_fact:
-    kube_home: "{{ ansible_env.HOME }}"
-  become: false
 
 - name: Disable swap
   ansible.builtin.command: swapoff -a

@@ -31,9 +31,9 @@ limactl -v  # verify
 Clone this repo:
 
 ```bash
-git clone https://github.com/mkrohn-repo/lima-platform.git
+git clone git@github.com:mikronixx/lima-platform.git
 # or
-git clone git@github.com:mkrohn-repo/lima-platform.git
+git clone https://github.com/mikronixx/lima-platform.git
 ```
 
 ### Installing socket_vmnet for network management
@@ -115,6 +115,7 @@ limactl delete vm-dhcp-bootp --force
 
 - Simplify current Makefile target rules
 - UTM Compatibility/Co-existance
+- Ansible refactor
 
 ## References
 

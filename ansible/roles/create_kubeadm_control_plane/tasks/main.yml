@@ -1,26 +1,48 @@
 ---
+- name: Gather user facts without become
+  ansible.builtin.setup:
+    gather_subset:
+      - user
+  become: false
+
+- name: Determine correct home directory for kubeadm user
+  ansible.builtin.set_fact:
+    kube_home: "{{ ansible_facts['user_dir'] }}"
+    kube_user: "{{ ansible_facts['user_id'] }}"
+
 - name: Init control plane
   ansible.builtin.command:
     cmd: kubeadm init --pod-network-cidr={{ pod_network_cidr }}
   args:
     creates: /etc/kubernetes/admin.conf
 
+
 - name: Ensure ~/.kube exists
   ansible.builtin.file:
     path: "{{ kube_home }}/.kube"
     state: directory
     mode: '0755'
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid | default(ansible_user_id) }}"
+    owner: "{{ kube_user }}"
+    group: "{{ kube_user }}"
+  become: false    
+
+- name: Copy admin.conf to temp location readable by user
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /tmp/admin.conf
+    remote_src: true
+    mode: '0644'
+  become: true
 
 - name: Install kubeconfig
   ansible.builtin.copy:
-    src: /etc/kubernetes/admin.conf
+    src: /tmp/admin.conf
     dest: "{{ kube_home }}/.kube/config"
     remote_src: true
     mode: '0644'
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid | default(ansible_user_id) }}"
+    owner: "{{ kube_user }}"
+    group: "{{ kube_user }}"
+  become: false
 
 - name: Install Calico
   ansible.builtin.shell: |

@@ -1,27 +1,28 @@
 ---
+
 - name: Configure prerequisites on all nodes
   hosts: all
   become: true
-  vars_files:
-    - vars.yml
   roles:
-    - k8s_prereqs
+    - install_kubeadm_prereqs
+  vars_files:
+  - ../../group_vars/all.yml  
 
 - name: Initialize control plane
   hosts: control_plane
   become: true
-  vars_files:
-    - vars.yml
   roles:
-    - kubeadm_control_plane
+    - create_kubeadm_control_plane
+  vars_files:
+  - ../../group_vars/all.yml  
 
 - name: Join workers to cluster
   hosts: workers
   become: true
-  vars_files:
-    - vars.yml
   roles:
-    - kubeadm_workers
+    - create_kubeadm_workers
+  vars_files:
+  - ../../group_vars/all.yml  
 
 - name: Approve kubelet-serving CSRs
   hosts: control_plane
