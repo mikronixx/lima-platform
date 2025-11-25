@@ -5,24 +5,18 @@
   become: true
   roles:
     - install_kubeadm_prereqs
-  vars_files:
-  - ../../group_vars/all.yml  
 
 - name: Initialize control plane
   hosts: control_plane
   become: true
   roles:
     - create_kubeadm_control_plane
-  vars_files:
-  - ../../group_vars/all.yml  
 
 - name: Join workers to cluster
   hosts: workers
   become: true
   roles:
     - create_kubeadm_workers
-  vars_files:
-  - ../../group_vars/all.yml  
 
 - name: Approve kubelet-serving CSRs
   hosts: control_plane

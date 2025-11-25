@@ -3,15 +3,18 @@
 .DEFAULT_GOAL := help
 NODES := k8scp000 k8sw000 k8sw001
 VM := mydev00
-PYTHON ?= python3
-INVENTORY_FILE ?= ansible/inventory/inventory.ini
-ANSIBLE_HOST_KEY_CHECKING ?= False
-ANSIBLE_SSH_ARGS ?= -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
-CREATE_CLUSTER_PLAYBOOK := ansible/playbooks/create_cluster.yml
-DELETE_CLUSTER_PLAYBOOK := ansible/playbooks/delete_cluster.yml
-CREATE_VM_PLAYBOOK := ansible/playbooks/create_vm.yml
-DELETE_VM_PLAYBOOK := ansible/playbooks/delete_vm.yml
-INSTALL_KUBEADM_PLAYBOOK := ansible/playbooks/create_kubeadm.yml
+ANSIBLE_DIR := ansible
+PYTHON      := python3
+CREATE_CLUSTER_PLAYBOOK := playbooks/create_cluster.yml
+DELETE_CLUSTER_PLAYBOOK := playbooks/delete_cluster.yml
+CREATE_VM_PLAYBOOK := playbooks/create_vm.yml
+DELETE_VM_PLAYBOOK := playbooks/delete_vm.yml
+INSTALL_KUBEADM_PLAYBOOK := playbooks/create_kubeadm.yml
+
+# Virtual environments possible enhancement
+#VENV_MAC   := venv-mac
+#VENV_LINUX := venv-linux
+
 
 .PHONY: help 
 
@@ -42,24 +45,26 @@ vm-clean:  vm-destroy mac-vm-infra-delete
 
 cluster: mac-infra cluster-create cluster-restart 
 
-cluster-clean:  cluster-destroy mac-infra-delete 
+cluster-clean:
+	$(MAKE) cluster-destroy
+	$(MAKE) mac-infra-delete
 
 cluster-kubeadm: cluster install-kubeadm
 
 mac-vm-infra:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_VM_PLAYBOOK)"
+	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(CREATE_VM_PLAYBOOK)"
 
 mac-vm-infra-delete:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_VM_PLAYBOOK)" 
+	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(DELETE_CLUSTER_PLAYBOOK)"
 
 mac-infra:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_CLUSTER_PLAYBOOK)"
+	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(CREATE_CLUSTER_PLAYBOOK)"
 
 mac-infra-delete:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_CLUSTER_PLAYBOOK)" 
+	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(DELETE_CLUSTER_PLAYBOOK)"
 
-install-kubeadm: 
-	@$(MAKE) _run_k8s_playbook PLAYBOOK="$(INSTALL_KUBEADM_PLAYBOOK) -i $(INVENTORY_FILE)"
+install-kubeadm:
+	@$(MAKE) run_k8s_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(INSTALL_KUBEADM_PLAYBOOK) -i $(INVENTORY_FILE)"
 
 vm-create:
 	@set -e; \
@@ -96,6 +101,7 @@ vm-destroy:
 		limactl delete $$n --force; \
 		echo "exit: $?"; \
 	done
+	
 
 
 cluster-create:
@@ -133,33 +139,17 @@ cluster-destroy:
 		limactl delete $$n --force; \
 	done
 
+	
+
 bootp-install:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_BOOTP_PLAYBOOK)"
+	@cd $(ANSIBLE_DIR) && $(MAKE) _run_local_mac_playbook PLAYBOOK="$(CREATE_BOOTP_PLAYBOOK)"
 
 bootp-delete:
-	@$(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_BOOTP_PLAYBOOK)"
+	@cd $(ANSIBLE_DIR) && $(MAKE) _run_local_mac_playbook PLAYBOOK="$(DELETE_BOOTP_PLAYBOOK)"
 
 _run_local_mac_playbook:
-	@set -euo pipefail; \
-	if ! command -v $(PYTHON) >/dev/null 2>&1; then \
-	  echo "ERROR: $(PYTHON) not found. Install Python 3 and retry." >&2; exit 1; \
-	fi; \
-	VENV_DIR=$$(mktemp -d -t ansible-venv-XXXXXX); \
-	trap 'rm -rf "$$VENV_DIR"' EXIT INT TERM; \
-	echo "[*] Creating venv at $$VENV_DIR"; \
-	$(PYTHON) -m venv "$$VENV_DIR"; \
-	. "$$VENV_DIR/bin/activate"; \
-	echo "[*] Upgrading pip and installing ansible..."; \
-	python -m pip install --upgrade pip >/dev/null; \
-	pip install --quiet ansible >/dev/null; \
-	echo "[*] Running ansible-playbook -K $(PLAYBOOK)"; \
-	ansible-playbook -K $(PLAYBOOK); \
-	pip cache purge >/dev/null 2>&1 || true; \
-	rm -rf $$VENV_DIR; \
-	find $$HOME/Library/Caches/com.apple.python/private/var/folders -type d -iname "ansible-venv-XXXXXX.*"  -exec rm -rf {} + >/dev/null 2>&1 || true
-
-_run_k8s_playbook:
-	@set -euo pipefail; \
+	@cd $(CWD) && \
+	set -euo pipefail; \
 	if ! command -v $(PYTHON) >/dev/null 2>&1; then \
 	  echo "ERROR: $(PYTHON) not found. Install Python 3 and retry." >&2; exit 1; \
 	fi; \
@@ -172,7 +162,27 @@ _run_k8s_playbook:
 	python -m pip install --upgrade pip >/dev/null; \
 	pip install --quiet ansible >/dev/null; \
 	echo "[*] Running ansible-playbook $(PLAYBOOK)"; \
-	ansible-playbook  $(PLAYBOOK); \
+	ansible-playbook -K $(PLAYBOOK); \
 	pip cache purge >/dev/null 2>&1 || true; \
 	rm -rf $$VENV_DIR; \
-	find $$HOME/Library/Caches/com.apple.python/private/var/folders -type d -iname "ansible-venv-XXXXXX.*"  -exec rm -rf {} + >/dev/null 2>&1 || true
+	find $$HOME/Library/Caches/com.apple.python/private/var/folders -type d -iname "ansible-venv-XXXXXX.*" -exec rm -rf {} + >/dev/null 2>&1 || true
+
+run_k8s_playbook:
+	@cd $(CWD) && \
+	set -euo pipefail; \
+	if ! command -v $(PYTHON) >/dev/null 2>&1; then \
+	  echo "ERROR: $(PYTHON) not found. Install Python 3 and retry." >&2; exit 1; \
+	fi; \
+	VENV_DIR=$$(mktemp -d -t ansible-venv-XXXXXX); \
+	trap 'rm -rf "$$VENV_DIR"' EXIT INT TERM; \
+	echo "[*] Creating venv at $$VENV_DIR"; \
+	$(PYTHON) -m venv "$$VENV_DIR"; \
+	. "$$VENV_DIR/bin/activate"; \
+	echo "[*] Upgrading pip and installing ansible..."; \
+	python -m pip install --upgrade pip >/dev/null; \
+	pip install --quiet ansible >/dev/null; \
+	echo "[*] Running ansible-playbook $(PLAYBOOK)"; \
+	ansible-playbook $(PLAYBOOK); \
+	pip cache purge >/dev/null 2>&1 || true; \
+	rm -rf $$VENV_DIR; \
+	find $$HOME/Library/Caches/com.apple.python/private/var/folders -type d -iname "ansible-venv-XXXXXX.*" -exec rm -rf {} + >/dev/null 2>&1 || true
