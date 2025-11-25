@@ -72,10 +72,12 @@
     mode: '0755'
 
 - name: Download Kubernetes Release.key
+  vars:
+    release_key_url: "https://pkgs.k8s.io/core:/stable:/{{ k8s_repo_version }}/deb/Release.key"
   ansible.builtin.get_url:
-    url: "https://pkgs.k8s.io/core:/stable:/{{ k8s_repo_version }}/deb/Release.key"
+    url: "{{ release_key_url }}"
     dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
-    mode: '0644'
+    mode: "0644"
 
 - name: Dearmor key
   ansible.builtin.command:

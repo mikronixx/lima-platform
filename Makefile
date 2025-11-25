@@ -43,7 +43,10 @@ vm: mac-vm-infra vm-create vm-restart
 
 vm-clean:  vm-destroy mac-vm-infra-delete 
 
-cluster: mac-infra cluster-create cluster-restart 
+cluster: 
+	$(MAKE) mac-infra
+	$(MAKE) cluster-create
+	$(MAKE) cluster-restart
 
 cluster-clean:
 	$(MAKE) cluster-destroy
@@ -64,7 +67,7 @@ mac-infra-delete:
 	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(DELETE_CLUSTER_PLAYBOOK)"
 
 install-kubeadm:
-	@$(MAKE) run_k8s_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(INSTALL_KUBEADM_PLAYBOOK) -i $(INVENTORY_FILE)"
+	@$(MAKE) run_k8s_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(INSTALL_KUBEADM_PLAYBOOK)"
 
 vm-create:
 	@set -e; \
