@@ -106,6 +106,7 @@ limactl shell vm-dhcp-bootp
 ## Stop or delete a VM with limactl
 
 ```bash
+#examples
 limactl stop vm-dhcp-bootp
 limactl delete vm-dhcp-bootp
 limactl delete vm-dhcp-bootp --force
