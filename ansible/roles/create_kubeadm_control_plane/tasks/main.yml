@@ -1,0 +1,74 @@
+---
+- name: Gather user facts without become
+  ansible.builtin.setup:
+    gather_subset:
+      - user
+  become: false
+
+- name: Determine correct home directory for kubeadm user
+  ansible.builtin.set_fact:
+    kube_home: "{{ ansible_facts['user_dir'] }}"
+    kube_user: "{{ ansible_facts['user_id'] }}"
+
+- name: Init control plane
+  ansible.builtin.command:
+    cmd: kubeadm init --pod-network-cidr={{ pod_network_cidr }}
+  args:
+    creates: /etc/kubernetes/admin.conf
+
+
+- name: Ensure ~/.kube exists
+  ansible.builtin.file:
+    path: "{{ kube_home }}/.kube"
+    state: directory
+    mode: '0755'
+    owner: "{{ kube_user }}"
+    group: "{{ kube_user }}"
+  become: false    
+
+- name: Copy admin.conf to temp location readable by user
+  ansible.builtin.copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /tmp/admin.conf
+    remote_src: true
+    mode: '0644'
+  become: true
+
+- name: Install kubeconfig
+  ansible.builtin.copy:
+    src: /tmp/admin.conf
+    dest: "{{ kube_home }}/.kube/config"
+    remote_src: true
+    mode: '0644'
+    owner: "{{ kube_user }}"
+    group: "{{ kube_user }}"
+  become: false
+
+- name: Install Calico
+  ansible.builtin.shell: |
+    kubectl apply -f {{ calico_manifest_url }} --kubeconfig {{ kube_home }}/.kube/config
+  args:
+    executable: /bin/bash
+
+- name: Get join command
+  ansible.builtin.command: kubeadm token create --print-join-command
+  delegate_to: "{{ groups['control_plane'][0] }}"
+  register: joincmd
+  changed_when: false
+
+- name: Set join command
+  ansible.builtin.set_fact:
+    global_join_command: "{{ joincmd.stdout }}"
+
+- name: Ensure serverTLSBootstrap true
+  ansible.builtin.lineinfile:
+    path: /var/lib/kubelet/config.yaml
+    regexp: '^serverTLSBootstrap:'
+    line: 'serverTLSBootstrap: true'
+    insertafter: EOF
+    backup: yes
+
+- name: Restart kubelet
+  ansible.builtin.systemd:
+    name: kubelet
+    state: restarted

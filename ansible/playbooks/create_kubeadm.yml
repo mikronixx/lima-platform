@@ -1,0 +1,42 @@
+---
+
+- name: Configure prerequisites on all nodes
+  hosts: all
+  become: true
+  roles:
+    - install_kubeadm_prereqs
+  vars_files:
+    - ../group_vars/all.yml   
+
+- name: Initialize control plane
+  hosts: control_plane
+  become: true
+  roles:
+    - create_kubeadm_control_plane
+  vars_files:
+    - ../group_vars/all.yml   
+
+- name: Join workers to cluster
+  hosts: workers
+  become: true
+  roles:
+    - create_kubeadm_workers
+  vars_files:
+    - ../group_vars/all.yml   
+
+- name: Approve kubelet-serving CSRs
+  hosts: control_plane
+  become: false
+  tasks:
+    - name: Wait for CSR creation
+      ansible.builtin.pause:
+        seconds: 90
+
+    - name: Approve all pending CSRs
+      ansible.builtin.shell: |
+        set -euo pipefail
+        for a in $(kubectl get csr -o name); do
+          kubectl certificate approve "$a";
+        done
+      args:
+        executable: /bin/bash

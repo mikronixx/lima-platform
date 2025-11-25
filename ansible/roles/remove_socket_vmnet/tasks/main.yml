@@ -1,0 +1,10 @@
+---
+- name: Remove installed binaries
+  ansible.builtin.file:
+    path: "{{ prefix_dir }}"
+    state: absent
+
+- name: Remove lima sudoers config
+  ansible.builtin.file:
+    path: /etc/sudoers.d/lima
+    state: absent

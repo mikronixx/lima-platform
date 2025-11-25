@@ -1,0 +1,6 @@
+---
+- name: Remove /etc/bootptab if present
+  ansible.builtin.file:
+    path: /etc/bootptab
+    state: absent
+  notify: Restart bootpd

@@ -1,0 +1,7 @@
+---
+- name: Ensure VM hosts are absent from /etc/hosts
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    line: "{{ item.ip }} {{ item.name }}"
+    state: absent
+  loop: "{{ hosts_entries }}"

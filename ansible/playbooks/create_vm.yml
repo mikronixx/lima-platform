@@ -1,0 +1,11 @@
+---
+- name: Creates Mac Infra for a single vm
+  hosts: localhost
+  connection: local
+  become: true
+  become_method: sudo
+
+  roles:
+    - install_socket_vmnet
+    - create_bootp
+    - create_fake_dns_vm

@@ -1,0 +1,11 @@
+---
+- name: Creates mac Infra for a 3 node cluster without k8s installed
+  hosts: localhost
+  connection: local
+  become: true
+  become_method: sudo
+
+  roles:
+    - install_socket_vmnet
+    - create_bootp
+    - create_fake_dns_k8s
