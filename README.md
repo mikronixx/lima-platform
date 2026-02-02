@@ -1,16 +1,23 @@
-# Lima Platform (Apple Silicon VM Automation)
+# Lima Platform
 
-Lima configurations that run Linux VMs on macOS (Apple Silicon). A starting point for Platform/SRE workflows and future Kubernetes clusters.
+**A bloat-free, open-source local platform for provisioning reproducible Linux VMs and Kubernetes clusters on Apple Silicon using Lima and Make.**
+
+Lima Platform provides a simple, automation-first way to spin up Linux virtual machines and multi-node Kubernetes clusters locally on Apple Silicon. It is designed for engineers who want fast, reproducible environments for infrastructure experimentation, platform engineering practice, and cluster operations. The focus is on repeatability, low friction, and operator-friendly workflows.
+
+---
+
+## What You Get
+
+- One-command provisioning of Linux virtual machines
+- Multi-node Linux VM clusters
+- Kubernetes clusters bootstrapped via kubeadm
+- Consistent L2 networking using socket_vmnet
+- Simple Makefile-driven lifecycle operations:
+  - make vm
+  - make cluster-kube
+  - make cluster-destroy
 
 > **Tested on:** Apple M3 Pro (12 cores, 36 GB RAM)
-
-## Why Lima?
-
-For engineers who want real Linux/K8s on a Mac.
-
-- **VMs without the bloat** on macOS, without full hypervisor UX
-- **Scriptable + reproducible** VM creation
-- **K8s-ready** foundation supporting multiple VMs, custom networks, and cloud-init for authentication/authorization setup
 
 ## Requirements
 
@@ -41,7 +48,8 @@ git clone https://github.com/mikronixx/lima-platform.git
 ### Installing socket_vmnet for network management
 
 ```bash
-# If you are creating a single vm or a k8s cluster with the make commands below there is to need to run this step.
+# If you are creating a single VM or a Kubernetes cluster using the make commands below,
+# there is no need to run this step.
 # Included for informational purposes
 # make help for a full list of options
 cd lima-platform/
@@ -66,7 +74,7 @@ make vm-stop
 make vm-restart
 ```
 
-## Create a 3 node cluster, but no k8s
+## Create a 3 node cluster (no Kubernetes)
 Creates 3 fully configured VMs using Lima with networking, hostname setup, and package updates. 
 ```bash
 # make help for a full list of options
@@ -116,7 +124,7 @@ limactl delete vm-dhcp-bootp --force
 ## Roadmap
 
 - Simplify current Makefile target rules
-- UTM compatibility/ co-existance
+- UTM compatibility/ coexistence
 - Makefile refactor to remove redundant code
 - Ansible refactor to include limactl commands to build VMs and Kubernetes clusters
 
