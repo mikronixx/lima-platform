@@ -164,6 +164,7 @@ _run_local_mac_playbook:
 	echo "[*] Upgrading pip and installing ansible..."; \
 	python -m pip install --upgrade pip >/dev/null; \
 	pip install --quiet ansible >/dev/null; \
+	ansible-galaxy collection install community.general >/dev/null; \
 	echo "[*] Running ansible-playbook $(PLAYBOOK)"; \
 	ansible-playbook -K $(PLAYBOOK); \
 	pip cache purge >/dev/null 2>&1 || true; \
@@ -184,6 +185,7 @@ run_k8s_playbook:
 	echo "[*] Upgrading pip and installing ansible..."; \
 	python -m pip install --upgrade pip >/dev/null; \
 	pip install --quiet ansible >/dev/null; \
+	ansible-galaxy collection install community.general >/dev/null; \
 	echo "[*] Running ansible-playbook $(PLAYBOOK)"; \
 	ansible-playbook $(PLAYBOOK); \
 	pip cache purge >/dev/null 2>&1 || true; \
