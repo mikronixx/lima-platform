@@ -77,13 +77,16 @@
   ansible.builtin.file:
     path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     mode: '0644'
+
 - name: Add Kubernetes apt repo
   ansible.builtin.deb822_repository:
-    repo: deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{ k8s_repo_version }}/deb/
-      /
-    filename: kubernetes
+    name: kubernetes
+    types: deb
+    uris: https://pkgs.k8s.io/core:/stable:/{{ k8s_repo_version }}/deb/
+    suites: /
+    signed_by: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     state: present
-    update_cache: true
+    enabled: true
 - name: Install kubelet/kubeadm/kubectl
   ansible.builtin.apt:
     name: [kubelet, kubeadm, kubectl]
