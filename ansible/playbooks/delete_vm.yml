@@ -4,7 +4,4 @@
   connection: local
   become: true
   become_method: sudo
-
-  roles:
-    - remove_socket_vmnet
-    - remove_fake_dns_vm
+  roles: [remove_socket_vmnet, remove_fake_dns_vm]

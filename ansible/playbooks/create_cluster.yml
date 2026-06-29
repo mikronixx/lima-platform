@@ -4,8 +4,4 @@
   connection: local
   become: true
   become_method: sudo
-
-  roles:
-    - install_socket_vmnet
-    - create_bootp
-    - create_fake_dns_k8s
+  roles: [install_socket_vmnet, create_bootp, create_fake_dns_k8s]

@@ -2,6 +2,6 @@
 - name: Ensure VM hosts exist in /etc/hosts
   ansible.builtin.lineinfile:
     path: /etc/hosts
-    line: "{{ item.ip }} {{ item.name }}"
+    line: '{{ item.ip }} {{ item.name }}'
     state: present
-  loop: "{{ hosts_entries }}"
+  loop: '{{ hosts_entries }}'
