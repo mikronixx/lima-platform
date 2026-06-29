@@ -2,7 +2,7 @@
 
 - name: Disable swap
   ansible.builtin.command: swapoff -a
-  when: ansible_swaptotal_mb | int > 0
+  when:  ansible_facts['swaptotal_mb'] | int > 0
 
 - name: Remove swap from fstab
   ansible.builtin.replace:
@@ -94,7 +94,7 @@
     mode: '0644'
 
 - name: Add Kubernetes apt repo
-  ansible.builtin.apt_repository:
+  ansible.builtin.deb822_repository:
     repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/{{ k8s_repo_version }}/deb/ /"
     filename: kubernetes
     state: present
