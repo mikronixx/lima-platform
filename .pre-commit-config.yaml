@@ -1,0 +1,13 @@
+---
+repos:
+  - repo: https://github.com/ansible/ansible-lint
+    rev: v25.5.0
+    hooks:
+      - id: ansible-lint
+        files: ^ansible/.*\.(yaml|yml)$
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+        files: ^(.*\.md|docs/.*\.md)$
+        args: [--ignore-words=.codespellignore]

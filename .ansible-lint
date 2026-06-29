@@ -1,0 +1,26 @@
+---
+profile: min
+
+offline: true
+
+exclude_paths:
+  - ansible/roles/install_socket_vmnet/
+
+mock_roles:
+  - install_socket_vmnet
+  - remove_socket_vmnet
+  - install_kubeadm_prereqs
+  - create_kubeadm_control_plane
+  - create_kubeadm_workers
+  - create_bootp
+  - remove_bootp
+  - create_fake_dns_k8s
+  - create_fake_dns_vm
+  - remove_fake_dns_k8s
+  - remove_fake_dns_vm
+
+mock_modules:
+  - ansible.builtin.make
+
+skip_list:
+  - var-naming[no-role-prefix]
