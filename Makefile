@@ -11,11 +11,6 @@ CREATE_VM_PLAYBOOK := playbooks/create_vm.yml
 DELETE_VM_PLAYBOOK := playbooks/delete_vm.yml
 INSTALL_KUBEADM_PLAYBOOK := playbooks/create_kubeadm.yml
 
-# Virtual environments possible enhancement
-#VENV_MAC   := venv-mac
-#VENV_LINUX := venv-linux
-
-
 .PHONY: help 
 
 help:
@@ -58,7 +53,7 @@ mac-vm-infra:
 	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(CREATE_VM_PLAYBOOK)"
 
 mac-vm-infra-delete:
-	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(DELETE_CLUSTER_PLAYBOOK)"
+	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(DELETE_VM_PLAYBOOK)"
 
 mac-infra:
 	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(CREATE_CLUSTER_PLAYBOOK)"
