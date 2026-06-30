@@ -1,7 +1,7 @@
 ---
-- name: Remove Infra for a vm
+- name: Remove DNS Infra for a vm
   hosts: localhost
   connection: local
   become: true
   become_method: sudo
-  roles: [remove_socket_vmnet, remove_fake_dns_vm]
+  roles: [remove_fake_dns_vm]

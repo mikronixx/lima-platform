@@ -1,0 +1,7 @@
+---
+- name: Remove vmnet socket for both cluster and vm.  Use this playbook when you want to remove the vmnet socket and you no longer wish to use lima
+  hosts: localhost
+  connection: local
+  become: true
+  become_method: sudo
+  roles: [remove_socket_vmnet]
