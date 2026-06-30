@@ -10,6 +10,7 @@ DELETE_CLUSTER_PLAYBOOK := playbooks/delete_cluster.yml
 CREATE_VM_PLAYBOOK := playbooks/create_vm.yml
 DELETE_VM_PLAYBOOK := playbooks/delete_vm.yml
 INSTALL_KUBEADM_PLAYBOOK := playbooks/create_kubeadm.yml
+DELETE_VMNET_SOCKET_PLAYBOOK := playbooks/delete_vmnet_socket.yml
 
 .PHONY: help 
 
@@ -33,10 +34,14 @@ help:
 	@echo "  make vm-start # starts single vm mydev00"
 	@echo "  make vm-restart # restarts single vm mydev00"
 	@echo "  make vm # creates a single vm, including socket_vmnet, a dhcp configuration for the a single VM, and mock dns in /etc/hosts"
+	@echo "  make delete-vmnet-socket # deletes the socket_vmnet configuration for both cluster and vm"
 
 vm: mac-vm-infra vm-create vm-restart
 
 vm-clean:  vm-destroy mac-vm-infra-delete 
+
+delete-vmnet-socket: 
+	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(DELETE_VMNET_SOCKET_PLAYBOOK)"
 
 cluster: 
 	$(MAKE) mac-infra
