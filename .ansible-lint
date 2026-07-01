@@ -3,9 +3,6 @@ profile: min
 
 offline: true
 
-exclude_paths:
-  - ansible/roles/install_socket_vmnet/
-
 mock_roles:
   - install_socket_vmnet
   - remove_socket_vmnet
