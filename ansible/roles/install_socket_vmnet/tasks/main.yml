@@ -34,7 +34,7 @@
     version: master
     force: true
 - name: Build socket_vmnet
-  ansible.builtin.make:
+  community.general.make:
     chdir: '{{ repo_dir }}'
 - name: Install socket_vmnet binaries
   ansible.builtin.command: make PREFIX={{ prefix_dir }} install.bin
