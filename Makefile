@@ -10,11 +10,7 @@ DELETE_CLUSTER_PLAYBOOK := playbooks/delete_cluster.yml
 CREATE_VM_PLAYBOOK := playbooks/create_vm.yml
 DELETE_VM_PLAYBOOK := playbooks/delete_vm.yml
 INSTALL_KUBEADM_PLAYBOOK := playbooks/create_kubeadm.yml
-
-# Virtual environments possible enhancement
-#VENV_MAC   := venv-mac
-#VENV_LINUX := venv-linux
-
+DELETE_VMNET_SOCKET_PLAYBOOK := playbooks/delete_vmnet_socket.yml
 
 .PHONY: help 
 
@@ -28,9 +24,9 @@ help:
 	@echo "  make cluster-start # starts an existing 3 node cluster"
 	@echo "  make cluster-stop # stops an existing 3 node cluster"
 	@echo "  make cluster-create  # provisions a 3 node cluster"
-	@echo "  make install-kubeadm # creates a 3 node kubernetes cluster with kubeadm"
 	@echo "  make cluster  # provisions a 3 node cluster, including socket_vmnet, a dhcp configuration for the VM's and a restart to update to latest kernel"
-	@echo "  make cluster-kube # provisions a 3 node cluster with kubeadm"
+	@echo "  make install-kubeadm # provisions a 3 node cluster with kubeadm on pre-existing VM's"
+	@echo "  make cluster-kubeadm # provisions the underlying vm's and a 3 node cluster with kubeadm"
 	@echo "  make cluster-destroy # deletes all VM's provisioned for a k8s cluster"
 	@echo "  make cluster-clean # deletes /etc/hosts  entries, all VM's provisioned for a k8s cluster"
 	@echo "  make vm-clean # deletes /etc/hosts  entries, all VM's provisioned outside of a k8s cluster"
@@ -38,10 +34,14 @@ help:
 	@echo "  make vm-start # starts single vm mydev00"
 	@echo "  make vm-restart # restarts single vm mydev00"
 	@echo "  make vm # creates a single vm, including socket_vmnet, a dhcp configuration for the a single VM, and mock dns in /etc/hosts"
+	@echo "  make delete-vmnet-socket # deletes the socket_vmnet configuration for both cluster and vm"
 
 vm: mac-vm-infra vm-create vm-restart
 
 vm-clean:  vm-destroy mac-vm-infra-delete 
+
+delete-vmnet-socket: 
+	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(DELETE_VMNET_SOCKET_PLAYBOOK)"
 
 cluster: 
 	$(MAKE) mac-infra
@@ -58,7 +58,7 @@ mac-vm-infra:
 	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(CREATE_VM_PLAYBOOK)"
 
 mac-vm-infra-delete:
-	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(DELETE_CLUSTER_PLAYBOOK)"
+	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(DELETE_VM_PLAYBOOK)"
 
 mac-infra:
 	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(CREATE_CLUSTER_PLAYBOOK)"
@@ -164,6 +164,7 @@ _run_local_mac_playbook:
 	echo "[*] Upgrading pip and installing ansible..."; \
 	python -m pip install --upgrade pip >/dev/null; \
 	pip install --quiet ansible >/dev/null; \
+	ansible-galaxy collection install community.general >/dev/null; \
 	echo "[*] Running ansible-playbook $(PLAYBOOK)"; \
 	ansible-playbook -K $(PLAYBOOK); \
 	pip cache purge >/dev/null 2>&1 || true; \
@@ -184,6 +185,7 @@ run_k8s_playbook:
 	echo "[*] Upgrading pip and installing ansible..."; \
 	python -m pip install --upgrade pip >/dev/null; \
 	pip install --quiet ansible >/dev/null; \
+	ansible-galaxy collection install community.general >/dev/null; \
 	echo "[*] Running ansible-playbook $(PLAYBOOK)"; \
 	ansible-playbook $(PLAYBOOK); \
 	pip cache purge >/dev/null 2>&1 || true; \

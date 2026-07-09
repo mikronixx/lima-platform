@@ -1,28 +1,24 @@
-#name: vm-dhcp-bootp.yml
-
+---
+# name: vm-dhcp-bootp.yml
 vmType: vz
 arch: aarch64
 cpus: 4
-memory: "6GiB"
-disk: "20GiB"
-
+memory: 6GiB
+disk: 20GiB
 images:
-  - location: "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-arm64.img"
-    arch: "aarch64"
+  - location: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-arm64.img
+    arch: aarch64
   # If there is a local copy  and you wish to use it
   # - location: "file:///Users/USERNAME/path/to/noble-server-cloudimg-arm64.img"
-
 # One NIC on a private host-only network (reachable from your Mac only)
 networks:
   - lima: shared
-    macAddress: "02:00:00:00:aa:01"   # change per-VM as needed
-
+    macAddress: 02:00:00:00:aa:01  # change per-VM as needed
 ssh:
   loadDotSSHPubKeys: true
-
 provision:
   - mode: system
-    script: |
+    script: |-
       #!/bin/bash
       set -eux
       apt-get update

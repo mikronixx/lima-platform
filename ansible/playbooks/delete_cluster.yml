@@ -1,11 +1,7 @@
 ---
-- name: Remove Infra for a 3 node cluster
+- name: Remove DNS and dhcp for a cluster
   hosts: localhost
   connection: local
   become: true
   become_method: sudo
-
-  roles:
-    - remove_socket_vmnet
-    - create_bootp
-    - remove_fake_dns_k8s
+  roles: [create_bootp, remove_fake_dns_k8s]
