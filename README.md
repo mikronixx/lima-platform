@@ -14,8 +14,8 @@ Lima Platform provides a simple, automation-first way to spin up Linux virtual m
 - Consistent L2 networking using socket_vmnet
 - Simple Makefile-driven lifecycle operations:
   - make vm
-  - make cluster-kube
-  - make cluster-destroy
+  - make cluster-kubeadm
+  - make cluster-clean
 
 > **Tested on:** Apple M3 Pro (12 cores, 36 GB RAM)
 
@@ -87,7 +87,7 @@ Creates a 3 node Kubernetes cluster using Lima with networking, hostname setup, 
 ```bash
 # make help for a full list of options
 cd lima-platform/
-make cluster-kube # Installs socket_vmnet, adds hostnames to /etc/hosts, adds a bootptab file for DHCP,  creates a 3 node cluster, updates packages, reboots, and installs Kubernetes with kubeadm
+make cluster-kubeadm # Installs socket_vmnet, adds hostnames to /etc/hosts, adds a bootptab file for DHCP,  creates a 3 node cluster, updates packages, reboots, and installs Kubernetes with kubeadm
 ssh k8sc000 # Welcome to your cluster!
 watch "kubectl get pod -A" # it takes about 8 min for your cluster to be ready
 ```
@@ -123,10 +123,8 @@ limactl delete vm-dhcp-bootp --force
 
 ## Roadmap
 
-- Simplify current Makefile target rules
-- UTM compatibility/ coexistence
-- Makefile refactor to remove redundant code
-- Ansible refactor to include limactl commands to build VMs and Kubernetes clusters
+- Ansible refactor to address the current requirement for 2x ansible.cfg
+- Possible Ansible refactor to include limactl commands to build VMs and Kubernetes clusters
 
 ## References
 
