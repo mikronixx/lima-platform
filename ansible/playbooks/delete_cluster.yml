@@ -3,5 +3,5 @@
   hosts: localhost
   connection: local
   become: true
-  become_method: sudo
+  become_method: ansible.builtin.sudo
   roles: [create_bootp, remove_fake_dns_k8s]

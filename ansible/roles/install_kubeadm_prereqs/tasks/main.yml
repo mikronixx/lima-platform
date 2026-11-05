@@ -30,7 +30,6 @@
       - curl
       - gnupg
       - lsb-release
-      - software-properties-common
     update_cache: true
 - name: Install containerd
   ansible.builtin.apt:

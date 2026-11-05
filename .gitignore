@@ -34,3 +34,4 @@ dist/
 build/
 Thumbs.db
 Desktop.ini
+ansible/.venv/

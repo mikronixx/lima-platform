@@ -5,7 +5,7 @@ cpus: 2
 memory: 4GiB
 disk: 20GiB
 images:
-  - location: https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-arm64.img
+  - location: https://cloud.debian.org/images/cloud/trixie/latest/debian-13-genericcloud-arm64.qcow2
     arch: aarch64
   # If there is a local copy  and you wish to use it
   # - location: "file:///Users/USERNAME/path/to/noble-server-cloudimg-arm64.img"
