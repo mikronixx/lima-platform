@@ -1,3 +1,8 @@
 ---
-profile: min
+profile: safety
 offline: true
+exclude_paths:
+  - .venv/
+  - poc/
+warn_list:
+  - var-naming[no-role-prefix]
