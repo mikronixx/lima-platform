@@ -16,14 +16,14 @@ DELETE_VM_PLAYBOOK := playbooks/delete_vm.yml
 INSTALL_KUBEADM_PLAYBOOK := playbooks/create_kubeadm.yml
 DELETE_VMNET_SOCKET_PLAYBOOK := playbooks/delete_vmnet_socket.yml
 
-.PHONY: help 
+.PHONY: help
 
 help:
 	@echo "Targets:"
 	@echo "  make mac-vm-infra # runs $(CREATE_VM_PLAYBOOK)"
 	@echo "  make mac-vm-infra-delete # runs $(DELETE_VM_PLAYBOOK)"
-	@echo "  make mac-infra # runs $(CREATE_CLUSTER_PLAYBOOK)" 
-	@echo "  make mac-infra-delete # runs $(DELETE_CLUSTER_PLAYBOOK)" 
+	@echo "  make mac-infra # runs $(CREATE_CLUSTER_PLAYBOOK)"
+	@echo "  make mac-infra-delete # runs $(DELETE_CLUSTER_PLAYBOOK)"
 	@echo "  make cluster-restart # restarts a 3 node cluster"
 	@echo "  make cluster-start # starts an existing 3 node cluster"
 	@echo "  make cluster-stop # stops an existing 3 node cluster"
@@ -42,12 +42,12 @@ help:
 
 vm: mac-vm-infra vm-create vm-restart
 
-vm-clean:  vm-destroy mac-vm-infra-delete 
+vm-clean:  vm-destroy mac-vm-infra-delete
 
-delete-vmnet-socket: 
+delete-vmnet-socket:
 	@$(MAKE) _run_local_mac_playbook CWD=$(ANSIBLE_DIR) PLAYBOOK="$(DELETE_VMNET_SOCKET_PLAYBOOK)"
 
-cluster: 
+cluster:
 	$(MAKE) mac-infra
 	$(MAKE) cluster-create
 	$(MAKE) cluster-restart
@@ -108,7 +108,7 @@ vm-destroy:
 		limactl delete $$n --force; \
 		echo "exit: $?"; \
 	done
-	
+
 
 
 cluster-create:
@@ -162,4 +162,4 @@ _run_local_mac_playbook run_k8s_playbook: $(VENV_STAMP)
 	@echo "[*] Running ansible-playbook $(PLAYBOOK)"
 	@cd "$(ANSIBLE_DIR)" && PATH="$(VENV)/bin:$$PATH" ansible-playbook $(ANSIBLE_ARGS) "$(PLAYBOOK)"
 
-.PHONY: _run_local_mac_playbook run_k8s_playbook	
+.PHONY: _run_local_mac_playbook run_k8s_playbook

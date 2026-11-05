@@ -53,7 +53,7 @@ git clone https://github.com/mikronixx/lima-platform.git
 # Included for informational purposes
 # make help for a full list of options
 cd lima-platform/
-make socket_vmnet_install 
+make socket_vmnet_install
 ```
 
 ## Create a single VM
@@ -75,7 +75,7 @@ make vm-restart
 ```
 
 ## Create a 3 node cluster (no Kubernetes)
-Creates 3 fully configured VMs using Lima with networking, hostname setup, and package updates. 
+Creates 3 fully configured VMs using Lima with networking, hostname setup, and package updates.
 ```bash
 # make help for a full list of options
 cd lima-platform/
@@ -83,7 +83,7 @@ make cluster # Installs socket_vmnet, adds hostnames to /etc/hosts, adds a bootp
 ```
 
 ## Create a 3 node kubeadm managed Kubernetes cluster
-Creates a 3 node Kubernetes cluster using Lima with networking, hostname setup, and package updates. 
+Creates a 3 node Kubernetes cluster using Lima with networking, hostname setup, and package updates.
 ```bash
 # make help for a full list of options
 cd lima-platform/

@@ -23,7 +23,7 @@ ______________________________________________________________________
 
   ```yaml
   ssh:
-  loadDotSSHPubKeys: true    
+  loadDotSSHPubKeys: true
   ```
 
 This ensures:
