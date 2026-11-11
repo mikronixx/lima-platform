@@ -27,3 +27,4 @@ repos:
     rev: v0.3.2
     hooks:
       - id: checkmake
+        files: ^Makefile$
