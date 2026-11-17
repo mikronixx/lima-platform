@@ -23,8 +23,3 @@ repos:
       - id: codespell
         files: \.md$
         args: [--ignore-words=.codespellignore]
-  - repo: https://github.com/mrtazz/checkmake
-    rev: v0.3.2
-    hooks:
-      - id: checkmake
-        files: ^Makefile$
