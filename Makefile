@@ -28,6 +28,7 @@ help:
 	@echo "  make cluster-start # starts an existing 3 node cluster"
 	@echo "  make cluster-stop # stops an existing 3 node cluster"
 	@echo "  make cluster-create  # provisions a 3 node cluster"
+	@echo "  make venv # creates/repairs the Ansible venv"
 	@echo "  make cluster  # provisions a 3 node cluster, including socket_vmnet, a dhcp configuration for the VM's and a restart to update to latest kernel"
 	@echo "  make install-kubeadm # provisions a 3 node cluster with kubeadm on pre-existing VM's"
 	@echo "  make cluster-kubeadm # provisions the underlying vm's and a 3 node cluster with kubeadm"
@@ -145,6 +146,16 @@ cluster-destroy:
 		echo "deleting $$n..."; \
 		limactl delete $$n --force; \
 	done
+
+# Rebuild the venv if its interpreter is missing/broken (e.g. pyenv/brew Python
+# removed or upgraded) even when the stamp file still exists.
+VENV_HEALTHY := $(shell "$(VENV)/bin/python" -c 'import ansible' >/dev/null 2>&1 && echo yes)
+ifneq ($(VENV_HEALTHY),yes)
+.PHONY: $(VENV_STAMP)
+endif
+
+venv: $(VENV_STAMP) ## create/repair the Ansible venv
+.PHONY: venv
 
 $(VENV_STAMP): $(REQUIREMENTS)
 	@command -v $(PYTHON) >/dev/null 2>&1 || { echo "ERROR: $(PYTHON) not found. Install Python 3 and retry." >&2; exit 1; }
