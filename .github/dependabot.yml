@@ -7,11 +7,15 @@ updates:
     groups:
       ansible:
         patterns: ["*"]            # ansible + ansible-core bumped together in one PR
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "pip"
     directory: "/"                 # requirements-pre-commit.txt (the pre-commit tool)
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -20,6 +24,8 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+    cooldown:
+      default-days: 7
 
   - package-ecosystem: "pre-commit"  # the hooks in .pre-commit-config.yaml
     directory: "/"
@@ -28,3 +34,5 @@ updates:
     groups:
       hooks:
         patterns: ["*"]
+    cooldown:
+      default-days: 7
