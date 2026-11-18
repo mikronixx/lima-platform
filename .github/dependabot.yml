@@ -1,12 +1,17 @@
 version: 2
 updates:
   - package-ecosystem: "pip"
-    directories: ["/", "/ansible"]
+    directory: "/ansible"
     schedule:
       interval: "weekly"
     groups:
       ansible:
         patterns: ["*"]            # ansible + ansible-core bumped together in one PR
+
+  - package-ecosystem: "pip"
+    directory: "/"                 # requirements-pre-commit.txt (the pre-commit tool)
+    schedule:
+      interval: "weekly"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -16,7 +21,7 @@ updates:
       actions:
         patterns: ["*"]
 
-  - package-ecosystem: "pre-commit"
+  - package-ecosystem: "pre-commit"  # the hooks in .pre-commit-config.yaml
     directory: "/"
     schedule:
       interval: "weekly"
