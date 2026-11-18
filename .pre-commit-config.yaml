@@ -1,8 +1,10 @@
 ---
+default_language_version:
+  python: python3
 exclude: ^poc/
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c  # frozen: v6.0.0
     hooks:
       - id: check-merge-conflict
       - id: check-yaml
@@ -10,15 +12,16 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
   - repo: https://github.com/ansible/ansible-lint
-    rev: v26.11.0
+    rev: b74fb6f73d234bf92672372cb1c10768e4018d16  # frozen: v26.11.0
     hooks:
       - id: ansible-lint
+        language_version: python3.13
         files: ^ansible/.*\.(yaml|yml)$
         args: [--project-dir=ansible]
         additional_dependencies:
           - ansible==14.6.0
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.3
+    rev: 57b21406f092110c18776e39b0bda50d37c945c8  # frozen: v2.4.3
     hooks:
       - id: codespell
         files: \.md$
