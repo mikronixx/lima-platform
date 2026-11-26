@@ -19,7 +19,7 @@ repos:
         files: ^ansible/.*\.(yaml|yml)$
         args: [--project-dir=ansible]
         additional_dependencies:
-          - ansible==14.6.0  # keep in sync with ansible/requirements.txt (Dependabot won't bump this)
+          - ansible==15.0.0  # keep in sync with ansible/requirements.txt (Dependabot won't bump this)
   - repo: https://github.com/codespell-project/codespell
     rev: 57b21406f092110c18776e39b0bda50d37c945c8  # frozen: v2.4.3
     hooks:
